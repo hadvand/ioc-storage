@@ -30,3 +30,8 @@ class IOCer:
         read.ioc_list.append(ioc)
         write = self._db_handler.write_iocs(read.ioc_list)
         return CurrentIOC(ioc, write.error)
+
+    def get_ioc_list(self) -> List[Dict[str, Any]]:
+        """Return a current list of IOCs"""
+        read = self._db_handler.read_iocs()
+        return read.ioc_list

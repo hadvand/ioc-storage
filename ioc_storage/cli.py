@@ -72,7 +72,7 @@ def _version_callback(value: bool) -> None:
 def add(
         input: List[str] = typer.Argument(...),
 ) -> None:
-    """ Add a new IOC to the database """
+    """Add a new IOC to the database"""
     link, source = input
     iocer = get_iocer()
     ioc, error = iocer.add(link, source)
@@ -87,6 +87,53 @@ def add(
             f'''ioc "{ioc['link']}" was added\n'''
             f'''from source: "{ioc['source']}"''',
             fg=typer.colors.GREEN
+        )
+
+
+@app.command(name='list')
+def list_all() -> None:
+    """List all IOCs in the database"""
+    iocer = get_iocer()
+    ioc_list = iocer.get_ioc_list()
+
+    if len(ioc_list) == 0:
+        typer.secho('No IOCs found',
+                    fg=typer.colors.YELLOW)
+        raise typer.Exit()
+
+    typer.secho(
+        '\nIOC list:\n',
+                fg=typer.colors.BLUE,
+                bold=True
+    )
+    columns = (
+        'ID.  ',
+        'Link  ',
+        'Source  '
+    )
+    headers = ''.join(columns)
+
+    typer.secho(
+                headers,
+                fg=typer.colors.BLUE,
+                bold=True
+    )
+    typer.secho(
+                '-'  * len(headers),
+                fg=typer.colors.BLUE
+    )
+
+    for id, ioc in enumerate(ioc_list, 1):
+        link, source = ioc.values()
+        typer.secho(
+            f'{id}{(len(columns[0]) - len(str(id))) * " "}'
+            f'| ({link}){(len(columns[1]) - len(str(link)) - 4) * " "}'
+            f'| {source}{(len(columns[2]) - len(str(source)) - 2) * " "}',
+            fg=typer.colors.BLUE
+        )
+        typer.secho(
+                    '-' * len(headers) + '\n',
+                    fg=typer.colors.BLUE
         )
 
 
