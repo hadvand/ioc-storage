@@ -4,7 +4,7 @@
 from pathlib import Path
 from typing import Any, Dict, NamedTuple, List
 
-from ioc_storage import DB_READ_ERROR
+from ioc_storage import DB_READ_ERROR, ID_ERROR
 from ioc_storage.database import DatabseHandler
 
 
@@ -35,3 +35,19 @@ class IOCer:
         """Return a current list of IOCs"""
         read = self._db_handler.read_iocs()
         return read.ioc_list
+
+    def remove(self, ioc_id: int) -> CurrentIOC:
+        """Remove an IOC from the database using its ID"""
+        read = self._db_handler.read_iocs()
+        if read.error == DB_READ_ERROR:
+            return CurrentIOC({}, read.error)
+
+        try:
+            ioc = read.ioc_list.pop(ioc_id - 1)
+        except IndexError:
+            return CurrentIOC({}, ID_ERROR)
+
+        write = self._db_handler.write_iocs(read.ioc_list)
+        return CurrentIOC(ioc, write.error)
+
+

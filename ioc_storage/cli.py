@@ -137,6 +137,58 @@ def list_all() -> None:
         )
 
 
+@app.command()
+def remove(
+        ioc_id: int = typer.Argument(...),
+        force: bool = typer.Option(
+            False,
+            '--force',
+            '-f',
+            help='Force deletion without confirmation'
+        )
+) -> None:
+    """Remove an IOC using the given ID"""
+    iocer = get_iocer()
+
+    def _remove():
+        ioc, error = iocer.remove(ioc_id)
+        if error:
+            typer.secho(
+                f'Removing ioc # {ioc_id} failed with "{ERRORS[error]}"',
+                fg=typer.colors.RED
+            )
+            raise typer.Exit(1)
+        else:
+            typer.secho(
+                f'''IOC # {ioc_id}: "{ioc['link']}" was removed''',
+                fg=typer.colors.GREEN
+            )
+
+    if force:
+        _remove()
+    else:
+        ioc_list = iocer.get_ioc_list()
+        try:
+            ioc = ioc_list[ioc_id-1]
+        except IndexError:
+            typer.secho(
+                'Invalid IOC ID',
+                fg=typer.colors.RED
+            )
+            raise typer.Exit(1)
+        delete = typer.confirm(
+            f'''Delete IOC # {ioc_id}: {ioc['link']}?'''
+        )
+        if delete:
+            _remove()
+        else:
+            typer.secho(
+                'Operation cancelled',
+                fg=typer.colors.YELLOW
+            )
+
+
+
 @app.callback()
 def main(
     version: Optional[bool] = typer.Option(
