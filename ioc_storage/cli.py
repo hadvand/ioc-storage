@@ -188,6 +188,32 @@ def remove(
             )
 
 
+@app.command(name='clear')
+def remove_all(
+        force: bool = typer.Option(
+            ...,
+            prompt='Delete all IOCs?',
+            help='Force deletion without confirmation'
+        )
+) -> None:
+    """Remove all todos"""
+    iocer = get_iocer()
+    if force:
+        error = iocer.remove_all().error
+        if error:
+            typer.secho(
+                f'Removing IOCs failed with "{ERRORS[error]}"',
+                fg=typer.colors.RED
+            )
+            raise typer.Exit(1)
+        else:
+            typer.secho(
+                f'All IOCs were removed',
+                fg=typer.colors.GREEN
+            )
+    else:
+        typer.echo('Operation canceled')
+
 
 @app.callback()
 def main(

@@ -50,4 +50,8 @@ class IOCer:
         write = self._db_handler.write_iocs(read.ioc_list)
         return CurrentIOC(ioc, write.error)
 
+    def remove_all(self) -> CurrentIOC:
+        """Remove all IOCs from the database"""
+        write = self._db_handler.write_iocs([])
+        return CurrentIOC({}, write.error)
 
