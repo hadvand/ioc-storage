@@ -20,9 +20,9 @@ def init_app(db_path: str) -> int:
     if config_code != SUCCESS:
         return config_code
 
-    databaase_code = _create_database(db_path)
-    if databaase_code != SUCCESS:
-        return databaase_code
+    database_code = _create_database(db_path)
+    if database_code != SUCCESS:
+        return database_code
 
     return SUCCESS
 

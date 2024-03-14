@@ -70,10 +70,10 @@ def _version_callback(value: bool) -> None:
 
 @app.command()
 def add(
-        input: List[str] = typer.Argument(...),
+        input_stdin: List[str] = typer.Argument(...),
 ) -> None:
     """Add a new IOC to the database"""
-    link, source = input
+    link, source = input_stdin
     iocer = get_iocer()
     ioc, error = iocer.add(link, source)
     if error:
@@ -103,11 +103,11 @@ def list_all() -> None:
 
     typer.secho(
         '\nIOC list:\n',
-                fg=typer.colors.BLUE,
-                bold=True
+        fg=typer.colors.BLUE,
+        bold=True
     )
     columns = (
-        'ID.  ',
+        'ID  ',
         'Link  ',
         'Source  '
     )
@@ -119,7 +119,7 @@ def list_all() -> None:
                 bold=True
     )
     typer.secho(
-                '-'  * len(headers),
+                '-' * len(headers),
                 fg=typer.colors.BLUE
     )
 
@@ -127,13 +127,9 @@ def list_all() -> None:
         link, source = ioc.values()
         typer.secho(
             f'{id}{(len(columns[0]) - len(str(id))) * " "}'
-            f'| ({link}){(len(columns[1]) - len(str(link)) - 4) * " "}'
+            f'| ({link}){(len(columns[1]) - len(str(link)) - 4) * " "} '
             f'| {source}{(len(columns[2]) - len(str(source)) - 2) * " "}',
             fg=typer.colors.BLUE
-        )
-        typer.secho(
-                    '-' * len(headers) + '\n',
-                    fg=typer.colors.BLUE
         )
 
 
@@ -196,7 +192,7 @@ def remove_all(
             help='Force deletion without confirmation'
         )
 ) -> None:
-    """Remove all todos"""
+    """Remove all IOCs"""
     iocer = get_iocer()
     if force:
         error = iocer.remove_all().error
@@ -213,17 +209,3 @@ def remove_all(
             )
     else:
         typer.echo('Operation canceled')
-
-
-@app.callback()
-def main(
-    version: Optional[bool] = typer.Option(
-        None,
-        "--version",
-        "-v",
-        help="Show the application's version and exit.",
-        callback=_version_callback,
-        is_eager=True,
-    )
-) -> None:
-    return
