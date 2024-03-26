@@ -4,7 +4,6 @@
 from pathlib import Path
 from typing import Optional, List
 import typer
-
 from ioc_storage import (
     __app_name__,
     __version__,
@@ -33,7 +32,8 @@ def init(
                     fg=typer.colors.RED)
         raise typer.Exit(1)
 
-    db_init_error = database.init_database(Path(db_path))
+    db_init_error = database.DatabaseHandler()
+    db_init_error.create_tables()
     if db_init_error:
         typer.secho(f'Creating database failed with: {ERRORS[db_init_error]}',
                     fg=typer.colors.RED)
@@ -44,23 +44,7 @@ def init(
 
 
 def get_iocer() -> ioc_storage.IOCer:
-    if config.CONFIG_FILE_PATH.exists():
-        db_path = database.get_database_path(config.CONFIG_FILE_PATH)
-    else:
-        typer.secho(
-            'Config file not found. Please, run "ioc_storage init" first',
-            fg=typer.colors.RED
-        )
-        raise typer.Exit(1)
-    if db_path.exists():
-        return ioc_storage.IOCer(db_path)
-    else:
-        typer.secho(
-            'Database not found. Please run "ioc_storage init" first',
-            fg=typer.colors.RED
-        )
-    raise typer.Exit(1)
-
+    return ioc_storage.IOCer()
 
 def _version_callback(value: bool) -> None:
     if value:
@@ -70,10 +54,10 @@ def _version_callback(value: bool) -> None:
 
 @app.command()
 def add(
-        input_stdin: List[str] = typer.Argument(...),
+        link: str = typer.Argument(...),
+        source: str = typer.Argument(...)
 ) -> None:
     """Add a new IOC to the database"""
-    link, source = input_stdin
     iocer = get_iocer()
     ioc, error = iocer.add(link, source)
     if error:
@@ -209,3 +193,6 @@ def remove_all(
             )
     else:
         typer.echo('Operation canceled')
+
+if __name__ == "__main__":
+    app()

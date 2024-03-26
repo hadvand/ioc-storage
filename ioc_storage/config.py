@@ -3,9 +3,7 @@
 
 import configparser
 from pathlib import Path
-
 import typer
-
 from ioc_storage import (
     DB_WRITE_ERROR, DIR_ERROR, FILE_ERROR, SUCCESS, __app_name__
 )
