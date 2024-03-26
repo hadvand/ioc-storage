@@ -1,11 +1,9 @@
 """This module provides the IOC storage's model-controller."""
 # ioc_storage/ioc_storage.py
 
-from pathlib import Path
 from typing import Any, Dict, NamedTuple, List
-
-from ioc_storage import DB_READ_ERROR, ID_ERROR
-from ioc_storage.database import DatabseHandler
+from ioc_storage import DB_READ_ERROR, ID_ERROR, SUCCESS
+from ioc_storage.database import DatabaseHandler
 
 
 class CurrentIOC(NamedTuple):
@@ -14,44 +12,31 @@ class CurrentIOC(NamedTuple):
 
 
 class IOCer:
-    def __init__(self, db_path: Path) -> None:
-        self._db_handler = DatabseHandler(db_path)
+    def __init__(self) -> None:
+        self._db_handler = DatabaseHandler()
 
-    def add(self, link: List[str], source: List[str]) -> CurrentIOC:
+    def add(self, link: str, source: str) -> CurrentIOC:
         """ Add a new IOC to the database """
-        ioc = {
-            'link': link,
-            'source': source
-        }
-        read = self._db_handler.read_iocs()
-        if read.error == DB_READ_ERROR:
-            return CurrentIOC(ioc, read.error)
-
-        read.ioc_list.append(ioc)
-        write = self._db_handler.write_iocs(read.ioc_list)
-        return CurrentIOC(ioc, write.error)
+        try:
+            self._db_handler.write_new_url_with_source(link, source)
+        except ValueError:
+            return CurrentIOC({}, DB_READ_ERROR)
+        return CurrentIOC({'link': link, 'source': source}, SUCCESS)
 
     def get_ioc_list(self) -> List[Dict[str, Any]]:
         """Return a current list of IOCs"""
-        read = self._db_handler.read_iocs()
-        return read.ioc_list
+        ioc_list = self._db_handler.list_all_ips_and_urls_with_sources()
+        return [{'link': record[0], 'source': record[1]} for record in ioc_list]
 
-    def remove(self, ioc_id: int) -> CurrentIOC:
-        """Remove an IOC from the database using its ID"""
-        read = self._db_handler.read_iocs()
-        if read.error == DB_READ_ERROR:
-            return CurrentIOC({}, read.error)
-
+    def remove(self, link: str) -> CurrentIOC:
+        """Remove an IOC from the database using its link"""
         try:
-            ioc = read.ioc_list.pop(ioc_id - 1)
-        except IndexError:
+            self._db_handler.delete_url(link)
+        except ValueError:
             return CurrentIOC({}, ID_ERROR)
-
-        write = self._db_handler.write_iocs(read.ioc_list)
-        return CurrentIOC(ioc, write.error)
+        return CurrentIOC({'link': link}, SUCCESS)
 
     def remove_all(self) -> CurrentIOC:
         """Remove all IOCs from the database"""
-        write = self._db_handler.write_iocs([])
-        return CurrentIOC({}, write.error)
-
+        self._db_handler.delete_all_records()
+        return CurrentIOC({}, SUCCESS)
