@@ -22,6 +22,7 @@ This is a command-line application designed to process and store malicious Indic
 
 ## Usage
 Initialize Database: Run the following command to set up the database:
+
 `python -m ioc_storage init`
 
 Replace <database_path> with the desired path to the database file.
