@@ -4,11 +4,11 @@
 from pathlib import Path
 from typing import Optional, List
 import typer
+
 from ioc_storage import (
     __app_name__,
     __version__,
     ERRORS,
-    config,
     database,
     ioc_storage
 )
@@ -17,38 +17,21 @@ app = typer.Typer()
 
 
 @app.command()
-def init(
-        db_path: str = typer.Option(
-            str(database.DEFAULT_DB_FILE_PATH),
-            '--db-path',
-            '-db',
-            prompt='ioc-storage database path'
-        ),
-) -> None:
+def init() -> None:
     """Initialize ioc-storage database."""
-    app_init_error = config.init_app(db_path)
-    if app_init_error:
-        typer.secho(f'Creating config file failed with: {ERRORS[app_init_error]}',
-                    fg=typer.colors.RED)
-        raise typer.Exit(1)
-
-    db_init_error = database.DatabaseHandler()
-    db_init_error.create_tables()
-    if db_init_error:
-        typer.secho(f'Creating database failed with: {ERRORS[db_init_error]}',
-                    fg=typer.colors.RED)
-        raise typer.Exit(1)
-    else:
-        typer.secho(f'The ioc-storage database is {db_path}',
-                    fg=typer.colors.GREEN)
+    db_handler = database.DatabaseHandler()
+    db_handler.create_tables()
+    typer.secho(f'The ioc-storage database is initialized',
+                fg=typer.colors.GREEN)
 
 
 def get_iocer() -> ioc_storage.IOCer:
     return ioc_storage.IOCer()
 
+
 def _version_callback(value: bool) -> None:
     if value:
-        typer.echo(f"{__app_name__} v{__version__}")
+        typer.echo(f'{__app_name__} v{__version__}')
         raise typer.Exit()
 
 
@@ -193,6 +176,7 @@ def remove_all(
             )
     else:
         typer.echo('Operation canceled')
+
 
 if __name__ == "__main__":
     app()

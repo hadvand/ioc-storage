@@ -1,8 +1,10 @@
 """This module provides the IOC storage's model-controller."""
 # ioc_storage/ioc_storage.py
 
+from pathlib import Path
 from typing import Any, Dict, NamedTuple, List
-from ioc_storage import DB_READ_ERROR, ID_ERROR, SUCCESS
+
+from ioc_storage import DB_READ_ERROR, ID_ERROR, SUCCESS, DB_WRITE_ERROR
 from ioc_storage.database import DatabaseHandler
 
 
@@ -20,7 +22,7 @@ class IOCer:
         try:
             self._db_handler.write_new_url_with_source(link, source)
         except ValueError:
-            return CurrentIOC({}, DB_READ_ERROR)
+            return CurrentIOC({}, DB_WRITE_ERROR)
         return CurrentIOC({'link': link, 'source': source}, SUCCESS)
 
     def get_ioc_list(self) -> List[Dict[str, Any]]:

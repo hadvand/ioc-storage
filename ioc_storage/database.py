@@ -4,9 +4,9 @@
 import configparser
 import psycopg2
 
-from pathlib import Path
 from ioc_storage import DB_WRITE_ERROR, SUCCESS
-from typing import Any, Dict, List, NamedTuple, Optional
+from typing import Any, Dict, List, NamedTuple
+
 from ioc_storage import DB_READ_ERROR, DB_WRITE_ERROR, JSON_ERROR, SUCCESS
 
 
@@ -17,10 +17,10 @@ class DatabaseHandler:
     def get_connection(self):
         if self.connection is None:
             self.connection = psycopg2.connect(
-                host="your_host",
-                database="your_database",
-                user="your_user",
-                password="your_password"
+                host="localhost",
+                database="postgres",
+                user="db_user",
+                password="123"
             )
         return self.connection
 
@@ -81,6 +81,14 @@ class DatabaseHandler:
                 self.get_connection().commit()
         else:
             raise ValueError(f"Source '{source_name}' not found.")
+
+    def get_source_by_name(self, source_name: str):
+        with self.get_connection().cursor() as cursor:
+            cursor.execute("SELECT * FROM sources WHERE name = %s;", (source_name,))
+            source = cursor.fetchone()
+            if source:
+                source_id, _ = source
+                return {"id": source_id, "name": source_name}
 
     def list_all_ips_and_urls_with_sources(self):
         with self.get_connection().cursor() as cursor:
